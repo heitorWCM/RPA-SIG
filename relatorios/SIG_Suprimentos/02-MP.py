@@ -1,10 +1,29 @@
+### Cabeçalho padrão de todos os scripts de RPA SIG ###
 import pyautogui
 import time
 import pygetwindow as gw
-
 import sys
 from pathlib import Path
-import os
+import argparse
+
+# Passa o argumento de data e caminho via linha de comando
+parser = argparse.ArgumentParser()
+parser.add_argument('--initial_date', type=str, required=False)
+parser.add_argument('--final_date', type=str, required=False)
+parser.add_argument('--path', type=str, required=False)
+args = parser.parse_args()
+
+if args.initial_date and args.final_date and args.path:
+    class DateFilter:
+        def __init__(self, initial, final, path):
+            self.initial_date = initial
+            self.final_date = final
+            self.path = path
+    
+    datesFilter = DateFilter(args.initial_date, args.final_date, args.path)
+else:
+    print("Error: initial_date, final_date, and path arguments are required.")
+    sys.exit()
 
 # Get absolute path and go up to project root (01 - RPA SIG)
 current_file = Path(__file__).resolve()  # Make it absolute!
@@ -12,38 +31,45 @@ project_root = current_file.parent.parent.parent  # Go up 3 levels: 02-MP.py -> 
 
 sys.path.insert(0, str(project_root))
 
-# DEBUG: Verify (you can remove these later)
-print("Project root:", project_root)
-print("Modules exists?", (project_root / "modules").exists())
-
 # Now your imports
 from modules import (
     locate_image_on_screen,
     AbrePR,
     LimpaPR,
     SelecionaLayout,
-    DeterminaDataECaminho,
     ClickOnExcel,
     CarregandoDados
 )
 
-time.sleep(5)  # time to switch to the correct screen
+total_steps = 9
+current_step = 1
+
+print(f"PROGRESS:{current_step}/{total_steps}")
+
+#### Início do processo do relatório de Estoque de MP ####
+
+time.sleep(1)  # time to switch to the correct screen
 
 nomePR = "PRX012016"
 
 nomeJanela = AbrePR(nomePR)
 
+current_step += 1
+print(f"PROGRESS:{current_step}/{total_steps}")
+
 SelecionaLayout(nomePR, nomeJanela, "SIG")
 
+current_step += 1
+print(f"PROGRESS:{current_step}/{total_steps}")
+
 # Vai para o filtro de dados
-location = locate_image_on_screen("./BaseTelas/04-Filter.png", waitFind=2)
+location = locate_image_on_screen("./base/PRX012016-Filter.png", waitFind=2)
 time.sleep(2.5)
 pyautogui.moveTo(location.left+(location.width)+15, location.top+location.height+10,duration=0.3)
 pyautogui.click()
 
-# Cria parâmetros de data
-datesFilter = DeterminaDataECaminho(r"C:\temp", "TesteRPA", start_day=3)
-datesFilter.create_folder()
+current_step += 1
+print(f"PROGRESS:{current_step}/{total_steps}")
 
 # Preenche os campos de data
 pyautogui.write(datesFilter.initial_date)
@@ -59,23 +85,38 @@ pyautogui.write("1/1")
 pyautogui.press('tab')
 time.sleep(0.3)
 pyautogui.write("1/8")
+pyautogui.press('enter')
 time.sleep(0.5)
+
+current_step += 1
+print(f"PROGRESS:{current_step}/{total_steps}")
 
 # Clica no botão de pesquisar
 pyautogui.click(x=location.left+255, y=location.top+455)
 time.sleep(15)
 
+current_step += 1
+print(f"PROGRESS:{current_step}/{total_steps}")
+
 # Carrega os dados
 CarregandoDados()
 
+current_step += 1
+print(f"PROGRESS:{current_step}/{total_steps}")
+
 # Procura local para exportar
-location = locate_image_on_screen("./BaseTelas/05-RightClickExport.png", waitFind=5, max_attempts=10)
+location = locate_image_on_screen("./base/PRX012016-RightClickExport.png", waitFind=5, max_attempts=10)
 pyautogui.click(x=location.left+210, y=location.top+40, button='Right')
 time.sleep(0.3)
 
+current_step += 1
+print(f"PROGRESS:{current_step}/{total_steps}")
 
 # Exporta para o excel
 ClickOnExcel(datesFilter.path, "02 - Estoque de MP", nomePR)
+
+current_step += 1
+print(f"PROGRESS:{current_step}/{total_steps}")
 
 # Fecha da janela
 atualJanela = gw.getWindowsWithTitle(nomeJanela)
