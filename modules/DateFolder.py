@@ -13,13 +13,13 @@ class DateRangeConfig:
         os.makedirs(self.path, exist_ok=True)
         return self
 
-def DeterminaDataECaminho(base_folder: str, subject: str, start_day: int = 1) -> DateRangeConfig:
+def DeterminaDataECaminho(base_folder: str, subfolder: str, start_day: int = 1) -> DateRangeConfig:
     """
     Creates a monthly folder structure and returns date range configuration.
     
     Args:
         base_folder: Base directory path (e.g., "C:\\temp")
-        subject: Subject/project name for the subfolder
+        subfolder: subfolder/project name for the subfolder
         start_day: Day of month to consider as "start" (default: 3)
     
     Returns:
@@ -39,9 +39,9 @@ def DeterminaDataECaminho(base_folder: str, subject: str, start_day: int = 1) ->
     # Create path
     path = os.path.join(
         base_folder,
+        subfolder,
         first_this_month.strftime("%Y"),
-        f"{first_this_month.strftime('%m')}.{first_this_month.strftime('%b').upper()}",
-        subject
+        f"{first_this_month.strftime('%m')}.{first_this_month.strftime('%b').upper()}"
     ).replace("/", "\\")
     
     return DateRangeConfig(
