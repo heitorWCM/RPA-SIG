@@ -5,6 +5,8 @@ import tkinter as tk
 from pathlib import Path
 from threading import Thread
 
+from modules.DateFolder import DeterminaDataECaminho
+
 class FloatingProgressWindow:
     def __init__(self):
         self.root = tk.Tk()
@@ -17,10 +19,13 @@ class FloatingProgressWindow:
         screen_height = self.root.winfo_screenheight()
         
         x = screen_width - window_width - 10
-        y = screen_height - window_height - 80  # 10 pixels more
+        y = screen_height - window_height - 80
         
         self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+        self.root.resizable(False, False)
         
+        self.root.iconbitmap("assets/icon.ico")
+
         # Make window stay on top
         self.root.attributes('-topmost', True)
         
@@ -233,6 +238,10 @@ def main():
     """
     base_folder = "relatorios"
     
+    # Cria parâmetros de data
+    datesFilter = DeterminaDataECaminho(r"C:\temp", "TesteRPA", start_day=3)
+    datesFilter.create_folder()
+
     # Create progress window
     progress_window = FloatingProgressWindow()
     
