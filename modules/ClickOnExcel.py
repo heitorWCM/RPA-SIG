@@ -48,12 +48,12 @@ def SaveExcelPRX(path, fileName):
     pyautogui.press('Enter')
 
     # Caso tenha que sobresecrever o arquivo existente
-    location = LocateImageOnScreen.locate_image_on_screen("./modules/ClickOnExcel-IMG/04-SaveAs.png", waitFind=3, lookForPresence=True)
+    location = LocateImageOnScreen.locate_image_on_screen(["./modules/ClickOnExcel-IMG/04-SaveAs.png","./modules/ClickOnExcel-IMG/05-SaveAs.png"], waitFind=3, lookForPresence=True)
     if location:
         pyautogui.press('enter')
 
     # Espera o arquivo ser salvo
-    wwie.wait_while_image_exists("./modules/ClickOnExcel-IMG/05-OpenFile.png", timeout=300)
+    wwie.wait_while_image_exists(["./modules/ClickOnExcel-IMG/06-OpenFile.png","./modules/ClickOnExcel-IMG/07-OpenFile.png"], timeout=300)
     pyautogui.press('tab')
     time.sleep(0.3)
     pyautogui.press('enter')

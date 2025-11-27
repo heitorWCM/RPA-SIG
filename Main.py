@@ -17,10 +17,13 @@ class FloatingProgressWindow:
         screen_height = self.root.winfo_screenheight()
         
         x = screen_width - window_width - 10
-        y = screen_height - window_height - 80  # 10 pixels more
+        y = screen_height - window_height - 80
         
         self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+        self.root.resizable(False, False)
         
+        self.root.iconbitmap("assets/icon.ico")
+
         # Make window stay on top
         self.root.attributes('-topmost', True)
         
@@ -102,7 +105,7 @@ def find_python_scripts(base_folder):
     
     return sorted(scripts)
 
-def execute_script(script_path, progress_window=None, script_index=0, total_scripts=0):
+def execute_script(script_path, progress_window=None, script_index=0, total_scripts=0, **kwargs):
     """
     Execute a Python script and return its status
     Can read progress markers from the script output
@@ -112,9 +115,20 @@ def execute_script(script_path, progress_window=None, script_index=0, total_scri
     print(f"{'='*80}\n")
     
     try:
+        
+        # Build command with optional arguments
+        cmd = [sys.executable, str(script_path)]
+        
+        # Add any kwargs as command line arguments
+        if 'initial_date' in kwargs and 'final_date' in kwargs:
+            cmd.extend(['--initial_date', kwargs['initial_date']])
+            cmd.extend(['--final_date', kwargs['final_date']])
+            cmd.extend(['--path', kwargs['path']])  
+            
+
         # Execute the script using subprocess with real-time output
         process = subprocess.Popen(
-            [sys.executable, str(script_path)],
+            cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -191,12 +205,30 @@ def run_scripts(base_folder, progress_window):
         print(f"  {i}. {script.relative_to(base_folder)}")
     
     print()
+
+    from modules import DeterminaDataECaminho
+    datesFilter = DeterminaDataECaminho(r"C:\temp", "TesteRPA", start_day=3)
+    datesFilter.create_folder()
+
+    print(f" {datesFilter.path}")
     
-    # Execute each script
+    # Execute each script with date parameters
     results = {}
     for i, script in enumerate(scripts, 1):
+
+        subfolder_name = script.parent.name
+        print(f"{'='*30} {subfolder_name} {'='*30}")
+
         progress_window.update_progress(i-1, len(scripts), script.name)
-        success = execute_script(script, progress_window, i-1, len(scripts))
+        success = execute_script(
+            script, 
+            progress_window, 
+            i-1, 
+            len(scripts),
+            initial_date=datesFilter.initial_date,
+            final_date=datesFilter.final_date,
+            path=datesFilter.path
+        )
         results[script.name] = success
     
     # Update to show completion
@@ -232,7 +264,7 @@ def main():
     Main function to execute all scripts with GUI progress window
     """
     base_folder = "relatorios"
-    
+
     # Create progress window
     progress_window = FloatingProgressWindow()
     
