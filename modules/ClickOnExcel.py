@@ -55,19 +55,27 @@ def SaveExcelPRX(path, fileName):
         pyautogui.press('enter')
 
     # Espera o arquivo ser salvo
-    wwie.wait_while_image_exists(["./modules/ClickOnExcel-IMG/06-OpenFile.png","./modules/ClickOnExcel-IMG/07-OpenFile.png"], timeout=300)
-    pyautogui.press('tab')
-    time.sleep(0.3)
-    pyautogui.press('enter')
+    if LocateImageOnScreen.locate_image_on_screen(["./modules/ClickOnExcel-IMG/06-OpenFile.png","./modules/ClickOnExcel-IMG/07-OpenFile.png"], waitFind=6, lookForPresence=True, max_attempts=10):   
+        pyautogui.press('tab')
+        time.sleep(0.3)
+        pyautogui.press('enter')
 
 #Função para salvar o excel padrão
 def SaveExcelStandard(path, fileName, prName):
+    tentativas = 0  # Move outside the while loop
 
     while True:
-        tentativas = 0
-
         try:
-            relatorio =  gw.getWindowsWithTitle("PROSYST [\PROSYST\WPROSYST\{prName}.RPT ]")
+            print(f"\n{'='*20} Attempting to activate report window {'='*20}\n")
+            print(f"PROSYST [\PROSYST\WPROSYST\{prName}.RPT ]")
+            
+            relatorio_list = gw.getWindowsWithTitle(f"PROSYST [\PROSYST\WPROSYST\{prName}.RPT ]")
+            
+
+            if not relatorio_list:
+                raise Exception("Window not found")
+            
+            relatorio = relatorio_list[0]
             relatorio.activate()
             time.sleep(1)
             relatorio.maximize()
@@ -81,15 +89,22 @@ def SaveExcelStandard(path, fileName, prName):
                 print("Número máximo de tentativas atingido. Abortando operação.")
                 sys.exit()
 
+    locationOption = [None, None]
     for i in range(2):
 
+        relatorio.activate()
+
+        time.sleep(2)
+
         location = LocateImageOnScreen.locate_image_on_screen("./modules/ClickOnExcel-IMG/08-Export.png")
+        
+        pyautogui.moveTo(location.left + location.width/2, location.top + location.height/2, duration=1)
 
         pyautogui.click(location.left + location.width/2, location.top + location.height/2)
 
         time.sleep(5)
 
-        gw.getActiveWindowTitle("Export")
+        gw.getWindowsWithTitle("Export")[0].activate()
 
         time.sleep(1)
 
@@ -108,17 +123,23 @@ def SaveExcelStandard(path, fileName, prName):
 
         while True:
             try:
-                location = LocateImageOnScreen.locate_image_on_screen("./modules/ClickOnExcel-IMG/10-PDFType.png", waitFind=1, max_attempts=1, lookForPresence=True)
-                if location:
-                    print("Excel file type selected.")
+                if i == 0:
+                    imageLocation = "./modules/ClickOnExcel-IMG/10-PDFType.png"
+                else:
+                    imageLocation = "./modules/ClickOnExcel-IMG/11-ExcelType.png"
+                
+                locationOption[i] = LocateImageOnScreen.locate_image_on_screen(imageLocation, waitFind=1, max_attempts=2, lookForPresence=True)
+                
+                if locationOption[i]:
+                    print("File type selected.")
                     break
                 else:
                     if i == 0:
                         pyautogui.press('up')
-                        time.sleep(0.5)
+                        time.sleep(1)
                     else:
                         pyautogui.press('down')
-                        time.sleep(0.5)
+                        time.sleep(1)
 
             except Exception as e:
                 print(f"Erro ao localizar a imagem: {str(e)}. Tentando novamente...")
@@ -131,10 +152,16 @@ def SaveExcelStandard(path, fileName, prName):
         pyautogui.press('Enter')
         time.sleep(2)
 
-        gw.getActiveWindowTitle("Export Options")
-        pyautogui.press('Enter')
 
-        location = LocateImageOnScreen.locate_image_on_screen("./modules/ClickOnExcel-IMG/12-SaveAs.png", waitFind=5)
+        nome_da_saida = gw.getActiveWindow().title
+        if nome_da_saida == "Export Options" or nome_da_saida == "Excel Format Options":
+            pyautogui.press('enter')
+            time.sleep(2)
+        else:
+            print("Export Options window not found, retrying...")
+            sys.exit()
+
+        location = LocateImageOnScreen.locate_image_on_screen(["./modules/ClickOnExcel-IMG/12-SaveAs.png","./modules/ClickOnExcel-IMG/13-SaveAs.png"], waitFind=5)
 
         pyautogui.click(x=location.left + 150, y=location.top + 50)
         pyautogui.write(path,interval=0.1)
