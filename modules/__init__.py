@@ -6,6 +6,7 @@ from .DateFolder import DeterminaDataECaminho
 from .ClickOnExcel import ClickOnExcel
 from .CarregandoDados import CarregandoDados
 
+
 __all__ = [
     'wait_while_image_exists',
     'locate_image_on_screen',

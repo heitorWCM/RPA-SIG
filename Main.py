@@ -123,11 +123,12 @@ def execute_script(script_path, progress_window=None, script_index=0, total_scri
         if 'initial_date' in kwargs and 'final_date' in kwargs:
             cmd.extend(['--initial_date', kwargs['initial_date']])
             cmd.extend(['--final_date', kwargs['final_date']])
-            cmd.extend(['--path', kwargs['path']])
+            cmd.extend(['--path', kwargs['path']])  
+
 
         # Execute the script using subprocess with real-time output
         process = subprocess.Popen(
-            [sys.executable, str(script_path)],
+            cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -208,15 +209,13 @@ def run_scripts(base_folder, progress_window):
     from modules import DeterminaDataECaminho
     datesFilter = DeterminaDataECaminho(r"C:\temp", "TesteRPA", start_day=3)
     datesFilter.create_folder()
-
-    print(f" {datesFilter.path}")
     
     # Execute each script with date parameters
     results = {}
     for i, script in enumerate(scripts, 1):
 
         subfolder_name = script.parent.name
-        print(f"{'='*30} {subfolder_name} {'='*30}")
+        print(f"{subfolder_name}")
 
         progress_window.update_progress(i-1, len(scripts), script.name)
         success = execute_script(
