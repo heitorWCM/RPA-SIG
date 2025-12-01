@@ -1,16 +1,11 @@
 import modules.LocateImageOnScreen as LocateImageOnScreen
-import os
 import time
 import pyautogui
 
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-IMG_DIR = os.path.join(BASE_DIR, "CheckBoxCheck-IMG")
-
 def CheckBoxCheck(prName, number):
     
-    img_ok  = os.path.join(IMG_DIR, f"{prName}-CB_{number}_OK.png")
-    img_nok = os.path.join(IMG_DIR, f"{prName}-CB_{number}_NOK.png")
+    img_ok  = f"./modules/CheckBoxCheck-IMG/{prName}-CB{number}-OK.png"
+    img_nok = f"./modules/CheckBoxCheck-IMG/{prName}-CB-{number}_NOK.png"
 
     locationBox = LocateImageOnScreen.locate_image_on_screen(img_ok,waitFind=2,lookForPresence=True)
 

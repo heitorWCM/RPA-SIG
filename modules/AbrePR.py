@@ -89,7 +89,7 @@ def AbrePR(nome_do_pr):
     while True:
         active = gw.getActiveWindow()
 
-        if active.title != "Prosyst ERP" and active.title != "Prosyst Desenvolvimento de Sistemas":
+        if active and active.title != "Prosyst ERP" and active.title != "Prosyst Desenvolvimento de Sistemas":
             print(f"Window found! {active.title}")
             return active.title
         

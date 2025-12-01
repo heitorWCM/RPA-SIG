@@ -2,15 +2,18 @@ import os
 import subprocess
 import sys
 import tkinter as tk
+from tkinter import ttk
 from pathlib import Path
 from threading import Thread
 from queue import Queue
 import ctypes
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+import customtkinter
 
 def resource_path(relative_path):
     """Get absolute path to resource, works for dev and for PyInstaller"""
     try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
     except Exception:
         base_path = os.path.abspath(".")
@@ -23,6 +26,251 @@ try:
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except:
     pass
+
+class ScriptSelectorWindow:
+    def __init__(self, base_folder):
+        self.base_folder = base_folder
+        self.selected_scripts = []
+        self.selected_period = None
+        self.root = tk.Tk()
+        self.root.title("RPA Run")
+        
+        # Set window size
+        window_width = 560
+        window_height = 500
+        
+        # Center window
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+        
+        self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+        self.root.resizable(False, False)
+        
+        # Set icon
+        try:
+            icon_path = resource_path("assets/icon.ico")
+            self.root.iconbitmap(icon_path)
+        except Exception as e:
+            print(f"Could not set icon: {e}")
+        
+        self.setup_ui()
+    
+    def generate_period_options(self):
+        """Generate period options: last 6 months + next 2 months"""
+        current_date = datetime.now()
+        periods = []
+        
+        # Generate from 6 months ago to 2 months ahead
+        for offset in range(-6, 3):  # -6 to +2
+            period_date = current_date + relativedelta(months=offset)
+            # Format as "MONTH_NAME/YY" in uppercase
+            period_str = period_date.strftime("%B/%y").upper()
+            periods.append((period_str, period_date))
+        
+        # Sort by date (most recent first)
+        periods.sort(key=lambda x: x[1], reverse=True)
+        
+        return periods
+        
+    def setup_ui(self):
+        # Top frame for button and combobox
+        top_frame = tk.Frame(self.root)
+        top_frame.pack(pady=10)
+        
+        # Period selection label and combobox
+        period_label = tk.Label(
+            top_frame,
+            text="Period:",
+            font=("Arial", 10)
+        )
+        period_label.grid(row=0, column=0, padx=(0, 5))
+        
+        # Generate period options
+        self.period_options = self.generate_period_options()
+        period_values = [period[0] for period in self.period_options]
+        
+        # Create combobox
+        self.period_combo = ttk.Combobox(
+            top_frame,
+            values=period_values,
+            state="readonly",
+            width=15,
+            font=("Arial", 10)
+        )
+        self.period_combo.grid(row=0, column=1, padx=(0, 25))
+        
+        # Set default to current month (should be first in sorted list)
+        current_month = datetime.now().strftime("%B/%y").upper()
+        if current_month in period_values:
+            self.period_combo.set(current_month)
+        else:
+            self.period_combo.current(0)
+        
+        # Run Scripts button
+        run_btn = customtkinter.CTkButton(
+            top_frame,
+            text="RUN SCRIPTS",
+            command=self.on_run_scripts,
+            font=("Arial", 14, "bold"),
+            text_color="white",
+            fg_color="#4CAF50",
+            border_color="#081409",
+            border_width=4,
+            border_spacing=8,
+            corner_radius=20,
+            hover_color="#3d8e41"
+        )
+        run_btn.grid(row=0, column=2)
+        
+        # Create notebook for tabs
+        self.notebook = ttk.Notebook(self.root)
+        self.notebook.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # Dictionary to store checkboxes by subfolder
+        self.checkboxes = {}
+        self.subfolder_vars = {}
+        
+        # Find all subfolders and scripts
+        self.script_structure = self.find_script_structure()
+        
+        # Create tabs for each subfolder
+        for subfolder, scripts in self.script_structure.items():
+            self.create_tab(subfolder, scripts)
+    
+    def find_script_structure(self):
+        """Find all scripts organized by subfolder"""
+        structure = {}
+        base_path = Path(self.base_folder)
+        
+        if not base_path.exists():
+            return structure
+        
+        for subfolder in sorted(base_path.iterdir()):
+            if subfolder.is_dir() and not subfolder.name.startswith('__'):
+                scripts = []
+                for file in sorted(subfolder.rglob('*.py')):
+                    if file.name != '__init__.py' and file.name != 'Main.py':
+                        scripts.append(file)
+                
+                if scripts:
+                    structure[subfolder.name] = scripts
+        
+        return structure
+    
+    def create_tab(self, subfolder_name, scripts):
+        """Create a tab for a subfolder with its scripts"""
+        # Create frame for tab
+        tab_frame = tk.Frame(self.notebook)
+        self.notebook.add(tab_frame, text=subfolder_name)
+        
+        # Create canvas with scrollbar
+        canvas = tk.Canvas(tab_frame, bg="white")
+        scrollbar = tk.Scrollbar(tab_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg="white")
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Pack scrollbar and canvas
+        scrollbar.pack(side="right", fill="y")
+        canvas.pack(side="left", fill="both", expand=True)
+        
+        # Store checkboxes for this subfolder
+        self.checkboxes[subfolder_name] = []
+        
+        # "Select All" checkbox
+        select_all_var = tk.BooleanVar(value=True)
+        self.subfolder_vars[subfolder_name] = select_all_var
+        
+        select_all_frame = tk.Frame(scrollable_frame, bg="white")
+        select_all_frame.pack(fill="x", padx=10, pady=(10, 5))
+        
+        select_all_cb = tk.Checkbutton(
+            select_all_frame,
+            text="All...",
+            variable=select_all_var,
+            command=lambda: self.toggle_all(subfolder_name),
+            font=("Arial", 9, "bold"),
+            bg="white"
+        )
+        select_all_cb.pack(anchor="w")
+        
+        # Add separator
+        separator = tk.Frame(scrollable_frame, height=2, bg="lightgray")
+        separator.pack(fill="x", padx=10, pady=3)
+        
+        # Create checkboxes for each script
+        for script in scripts:
+            var = tk.BooleanVar(value=True)
+            
+            # Extract clean script name without numbers and underscores
+            script_display = script.stem.replace("_", " ").replace("-", " ")
+            
+            cb_frame = tk.Frame(scrollable_frame, bg="white")
+            cb_frame.pack(fill="x", padx=30, pady=2)
+            
+            cb = tk.Checkbutton(
+                cb_frame,
+                text=script_display,
+                variable=var,
+                font=("Arial", 10),
+                bg="white",
+                command=lambda sn=subfolder_name: self.update_select_all(sn)
+            )
+            cb.pack(anchor="w")
+            
+            self.checkboxes[subfolder_name].append((var, script))
+    
+    def toggle_all(self, subfolder_name):
+        """Toggle all checkboxes in a subfolder"""
+        state = self.subfolder_vars[subfolder_name].get()
+        for var, _ in self.checkboxes[subfolder_name]:
+            var.set(state)
+    
+    def update_select_all(self, subfolder_name):
+        """Update 'Select All' checkbox based on individual selections"""
+        all_checked = all(var.get() for var, _ in self.checkboxes[subfolder_name])
+        self.subfolder_vars[subfolder_name].set(all_checked)
+    
+    def on_run_scripts(self):
+        """Collect selected scripts and period, then close window"""
+        self.selected_scripts = []
+        
+        for subfolder_name, checkboxes in self.checkboxes.items():
+            for var, script_path in checkboxes:
+                if var.get():
+                    self.selected_scripts.append(script_path)
+        
+        if not self.selected_scripts:
+            tk.messagebox.showwarning(
+                "No Scripts Selected",
+                "Please select at least one script to run."
+            )
+            return
+        
+        # Get selected period
+        selected_period_str = self.period_combo.get()
+        
+        # Find the corresponding date object
+        for period_str, period_date in self.period_options:
+            if period_str == selected_period_str:
+                self.selected_period = period_date
+                break
+        
+        self.root.destroy()
+    
+    def show(self):
+        """Show the window and wait for user interaction"""
+        self.root.mainloop()
+        return self.selected_scripts, self.selected_period
+
 
 class FloatingProgressWindow:
     def __init__(self):
@@ -141,24 +389,6 @@ class FloatingProgressWindow:
         """Close the window"""
         self.root.destroy()
 
-def find_python_scripts(base_folder):
-    """
-    Find all Python scripts in subfolders of the base folder,
-    excluding __init__.py and Main.py
-    """
-    scripts = []
-    base_path = Path(base_folder)
-    
-    # Walk through all subdirectories
-    for subfolder in base_path.iterdir():
-        if subfolder.is_dir() and not subfolder.name.startswith('__'):
-            # Look for Python files in each subfolder
-            for file in subfolder.rglob('*.py'):
-                # Exclude __init__.py files
-                if file.name != '__init__.py' and file.name != 'Main.py':
-                    scripts.append(file)
-    
-    return sorted(scripts)
 
 def execute_script(script_path, progress_window=None, script_index=0, total_scripts=0, **kwargs):
     """
@@ -170,7 +400,6 @@ def execute_script(script_path, progress_window=None, script_index=0, total_scri
     print(f"{'='*80}\n")
     
     try:
-        
         # Build command with optional arguments
         cmd = [sys.executable, '-u', str(script_path)]
         
@@ -179,7 +408,6 @@ def execute_script(script_path, progress_window=None, script_index=0, total_scri
             cmd.extend(['--initial_date', kwargs['initial_date']])
             cmd.extend(['--final_date', kwargs['final_date']])
             cmd.extend(['--path', kwargs['path']])  
-
 
         # Execute the script using subprocess with real-time output
         process = subprocess.Popen(
@@ -200,7 +428,6 @@ def execute_script(script_path, progress_window=None, script_index=0, total_scri
             sys.stdout.flush()
             
             # Check for progress markers in the output
-            # Format: PROGRESS:current/total
             if line.strip().startswith("PROGRESS:"):
                 try:
                     parts = line.strip().split(":")[1].split("/")
@@ -238,60 +465,82 @@ def execute_script(script_path, progress_window=None, script_index=0, total_scri
         print(f"\n✗ Unexpected error executing {script_path.name}: {str(e)}")
         sys.stdout.flush()
         return False
-    
-def run_scripts(base_folder, progress_window):
+
+
+def run_scripts(selected_scripts, selected_period, progress_window):
     """
-    Find and execute all scripts with progress updates
+    Execute selected scripts with progress updates
     """
     print(f"{'='*80}")
     print(f"RPA Automation - Batch Executor")
     print(f"{'='*80}\n")
     
-    # Check if relatorios folder exists
-    if not os.path.exists(base_folder):
-        print(f"Error: '{base_folder}' folder not found!")
-        progress_window.update_status("Error: Folder not found!")
+    if not selected_scripts:
+        print("No scripts selected to execute.")
+        progress_window.update_status("No scripts selected")
         return
     
-    # Find all Python scripts
-    scripts = find_python_scripts(base_folder)
+    print(f"Found {len(selected_scripts)} script(s) to execute:\n")
+    for i, script in enumerate(selected_scripts, 1):
+        print(f"  {i}. {script.name}")
     
-    if not scripts:
-        print(f"No Python scripts found in '{base_folder}' subfolders.")
-        progress_window.update_status("No scripts found")
-        return
-    
-    print(f"Found {len(scripts)} script(s) to execute:\n")
-    for i, script in enumerate(scripts, 1):
-        print(f"  {i}. {script.relative_to(base_folder)}")
-    
+    print(f"\nSelected period: {selected_period.strftime('%B/%Y')}")
     print()
 
     from modules import DeterminaDataECaminho
-    datesFilter = DeterminaDataECaminho(r"C:\temp", "TesteRPA", start_day=3)
-    datesFilter.create_folder()
+    
+    # Calculate the reference date based on selected period
+    # The logic remains the same: start_day=3 means we look at the previous month
+    # So if user selects "JANUARY/25", we get data from December 2024
+    year = selected_period.year
+    month = selected_period.month
+    
+    # Create a date for the 3rd day of the selected month
+    reference_date = datetime(year, month, 3)
+    
+    # Calculate first day of last month and last day of last month
+    first_day_selected_month = reference_date.replace(day=1)
+    last_day_prev_month = first_day_selected_month - timedelta(days=1)
+    first_day_prev_month = last_day_prev_month.replace(day=1)
+    
+    # Format dates
+    initial_date = first_day_prev_month.strftime("%d%m%Y")
+    final_date = last_day_prev_month.strftime("%d%m%Y")
+    
+    # Create path with selected period
+    path = os.path.join(
+        r"C:\temp",
+        "TesteRPA",
+        reference_date.strftime("%Y"),
+        f"{reference_date.strftime('%m')}.{reference_date.strftime('%b').upper()}"
+    ).replace("/", "\\")
+    
+    # Create the folder
+    os.makedirs(path, exist_ok=True)
+    
+    print(f"Date range: {initial_date} to {final_date}")
+    print(f"Output path: {path}\n")
     
     # Execute each script with date parameters
     results = {}
-    for i, script in enumerate(scripts, 1):
-
+    for i, script in enumerate(selected_scripts, 1):
         subfolder_name = script.parent.name
         print(f"{subfolder_name}")
 
-        progress_window.update_progress(i-1, len(scripts), script.name)
+        progress_window.update_progress(i-1, len(selected_scripts), script.name)
         success = execute_script(
             script, 
             progress_window, 
             i-1, 
-            len(scripts),
-            initial_date=datesFilter.initial_date,
-            final_date=datesFilter.final_date,
-            path=datesFilter.path
+            len(selected_scripts),
+            initial_date=initial_date,
+            final_date=final_date,
+            path=path
         )
         results[script.name] = success
     
     # Update to show completion
-    progress_window.update_progress(len(scripts), len(scripts), "Complete")
+    progress_window.update_progress(len(selected_scripts), len(selected_scripts), "Complete")
     
     # Print summary
     print(f"\n{'='*80}")
@@ -318,22 +567,33 @@ def run_scripts(base_folder, progress_window):
     print("Batch execution completed!")
     print(f"{'='*80}")
 
+
 def main():
     """
-    Main function to execute all scripts with GUI progress window
+    Main function to show script selector and execute selected scripts
     """
     base_folder = "relatorios"
 
+    # Show script selector window
+    selector = ScriptSelectorWindow(base_folder)
+    selected_scripts, selected_period = selector.show()
+    
+    # If no scripts selected, exit
+    if not selected_scripts:
+        print("No scripts selected. Exiting.")
+        return
+    
     # Create progress window
     progress_window = FloatingProgressWindow()
     
     # Run scripts in a separate thread to keep GUI responsive
-    script_thread = Thread(target=run_scripts, args=(base_folder, progress_window))
+    script_thread = Thread(target=run_scripts, args=(selected_scripts, selected_period, progress_window))
     script_thread.daemon = True
     script_thread.start()
     
     # Start the GUI event loop
     progress_window.root.mainloop()
+
 
 if __name__ == "__main__":
     main()

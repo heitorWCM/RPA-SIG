@@ -151,6 +151,8 @@ pyautogui.click()
 MouseBusy()
 time.sleep(1)
 
+CFOP.activate()
+
 locateConfirmar = locate_image_on_screen("./base/PR03017-CFOP-Confirmar.png", waitFind=3)
 pyautogui.moveTo(x=locateConfirmar.left + (locateConfirmar.width/2), y=locateConfirmar.top + (locateConfirmar.height/2), duration=0.5)
 pyautogui.click()
@@ -160,8 +162,11 @@ time.sleep(1)
 
 CFOP.close()
 
+WaitOnWindow(CFOP.title, timeout=120, untilClosed=True)
+
 MouseBusy()
-time.sleep(1)
+
+time.sleep(5)
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")

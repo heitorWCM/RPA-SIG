@@ -2,7 +2,7 @@ import pygetwindow as gw
 import time
 
 
-def WaitOnWindow(window_name, wait=0.5, timeout=60):
+def WaitOnWindow(window_name, wait=0.5, timeout=60, untilClosed=False):
     """
     Waits for a window with the specified name to appear within the given timeout period.
 
@@ -22,12 +22,19 @@ def WaitOnWindow(window_name, wait=0.5, timeout=60):
         for window in window_list:
             print(f"Checking for window: {window}")
             windows_found = gw.getWindowsWithTitle(window)
-            if windows_found:
+            if windows_found and not untilClosed:
                 print(f"Window found: {window}")
                 return windows_found[0]
+            elif not windows_found and untilClosed and window == window_list[len(window_list) - 1]:
+                print(f"Window closed: {window_name}")
+                return None
+            elif windows_found and untilClosed:
+                print(f"Window still open: {window_name}")
+                break
             elif time.time() - start_time > timeout:
                 print(f"Timeout reached while waiting for window: {window}")
                 return None
+           
             time.sleep(wait)
 
 # Example usage:
