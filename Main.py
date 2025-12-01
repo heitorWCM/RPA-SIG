@@ -4,6 +4,25 @@ import sys
 import tkinter as tk
 from pathlib import Path
 from threading import Thread
+from queue import Queue
+import ctypes
+
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    
+    return os.path.join(base_path, relative_path)
+
+# Set Windows App User Model ID for taskbar icon
+try:
+    myappid = 'mycompany.rpa.automation.1.0'
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+except:
+    pass
 
 class FloatingProgressWindow:
     def __init__(self):
@@ -12,7 +31,7 @@ class FloatingProgressWindow:
         
         # Set window size and position (bottom right corner)
         window_width = 250
-        window_height = 70  # Increased to fit progress bar
+        window_height = 70
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         
@@ -22,7 +41,12 @@ class FloatingProgressWindow:
         self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
         self.root.resizable(False, False)
         
-        self.root.iconbitmap("assets/icon.ico")
+        # Set icon using resource_path
+        try:
+            icon_path = resource_path("assets/icon.ico")
+            self.root.iconbitmap(icon_path)
+        except Exception as e:
+            print(f"Could not set icon: {e}")
 
         # Make window stay on top
         self.root.attributes('-topmost', True)
@@ -59,8 +83,35 @@ class FloatingProgressWindow:
         self.total_steps = 0
         self.current_step = 0
         
+        # Create queue for thread-safe updates
+        self.update_queue = Queue()
+        
+        # Start checking queue
+        self.check_queue()
+        
+    def check_queue(self):
+        """Check queue for updates and process them"""
+        try:
+            while not self.update_queue.empty():
+                update_type, data = self.update_queue.get_nowait()
+                
+                if update_type == "progress":
+                    current, total, script_name, substep, total_substeps = data
+                    self._update_progress(current, total, script_name, substep, total_substeps)
+                elif update_type == "status":
+                    self._update_status(data)
+        except:
+            pass
+        
+        # Schedule next check
+        self.root.after(100, self.check_queue)
+    
     def update_progress(self, current, total, script_name, substep=0, total_substeps=0):
-        """Update the progress display"""
+        """Queue a progress update"""
+        self.update_queue.put(("progress", (current, total, script_name, substep, total_substeps)))
+    
+    def _update_progress(self, current, total, script_name, substep=0, total_substeps=0):
+        """Internal method to actually update the progress display"""
         self.status_label.config(text=f"Running: {script_name[:25]}...")
         
         # Calculate overall progress including substeps
@@ -75,12 +126,16 @@ class FloatingProgressWindow:
         
         # Update progress bar width
         self.progress_bar.place(relwidth=progress)
-        self.root.update()
+        self.root.update_idletasks()
     
     def update_status(self, message):
-        """Update status message"""
+        """Queue a status update"""
+        self.update_queue.put(("status", message))
+    
+    def _update_status(self, message):
+        """Internal method to actually update status message"""
         self.status_label.config(text=message)
-        self.root.update()
+        self.root.update_idletasks()
     
     def close(self):
         """Close the window"""
@@ -117,14 +172,14 @@ def execute_script(script_path, progress_window=None, script_index=0, total_scri
     try:
         
         # Build command with optional arguments
-        cmd = [sys.executable, str(script_path)]
+        cmd = [sys.executable, '-u', str(script_path)]
         
         # Add any kwargs as command line arguments
         if 'initial_date' in kwargs and 'final_date' in kwargs:
             cmd.extend(['--initial_date', kwargs['initial_date']])
             cmd.extend(['--final_date', kwargs['final_date']])
             cmd.extend(['--path', kwargs['path']])  
-            
+
 
         # Execute the script using subprocess with real-time output
         process = subprocess.Popen(
@@ -132,7 +187,8 @@ def execute_script(script_path, progress_window=None, script_index=0, total_scri
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            bufsize=1
+            bufsize=1,
+            universal_newlines=True
         )
         
         current_substep = 0
@@ -141,6 +197,7 @@ def execute_script(script_path, progress_window=None, script_index=0, total_scri
         # Read output line by line
         for line in process.stdout:
             print(line, end='')
+            sys.stdout.flush()
             
             # Check for progress markers in the output
             # Format: PROGRESS:current/total
@@ -157,14 +214,16 @@ def execute_script(script_path, progress_window=None, script_index=0, total_scri
                             current_substep,
                             total_substeps
                         )
-                except:
-                    pass
+                        print(f"[DEBUG] Progress updated: {current_substep}/{total_substeps}", flush=True)
+                except Exception as e:
+                    print(f"Error parsing progress: {e}", flush=True)
         
         # Wait for process to complete
         return_code = process.wait()
         
         if return_code == 0:
             print(f"\n✓ Successfully completed: {script_path.name}")
+            sys.stdout.flush()
             return True
         else:
             stderr = process.stderr.read()
@@ -172,12 +231,14 @@ def execute_script(script_path, progress_window=None, script_index=0, total_scri
             print(f"Return code: {return_code}")
             if stderr:
                 print(f"Error: {stderr}")
+            sys.stdout.flush()
             return False
         
     except Exception as e:
         print(f"\n✗ Unexpected error executing {script_path.name}: {str(e)}")
+        sys.stdout.flush()
         return False
-
+    
 def run_scripts(base_folder, progress_window):
     """
     Find and execute all scripts with progress updates
@@ -209,15 +270,13 @@ def run_scripts(base_folder, progress_window):
     from modules import DeterminaDataECaminho
     datesFilter = DeterminaDataECaminho(r"C:\temp", "TesteRPA", start_day=3)
     datesFilter.create_folder()
-
-    print(f" {datesFilter.path}")
     
     # Execute each script with date parameters
     results = {}
     for i, script in enumerate(scripts, 1):
 
         subfolder_name = script.parent.name
-        print(f"{'='*30} {subfolder_name} {'='*30}")
+        print(f"{subfolder_name}")
 
         progress_window.update_progress(i-1, len(scripts), script.name)
         success = execute_script(

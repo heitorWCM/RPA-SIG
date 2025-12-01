@@ -5,6 +5,7 @@ from .Layout import SelecionaLayout
 from .DateFolder import DeterminaDataECaminho
 from .ClickOnExcel import ClickOnExcel
 from .CarregandoDados import CarregandoDados
+from .WaitOnWindow import WaitOnWindow
 
 
 __all__ = [
@@ -16,4 +17,5 @@ __all__ = [
     'DeterminaDataECaminho',
     'ClickOnExcel',
     'CarregandoDados'
+    'WaitOnWindow'
 ]

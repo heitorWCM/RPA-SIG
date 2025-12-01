@@ -4,7 +4,7 @@
 #
 ####################################################################
 
-import pygetwindow as gw
+import modules.WaitOnWindow as wow
 import time
 import pyautogui
 import modules.LocateImageOnScreen as LocateImageOnScreen
@@ -13,7 +13,11 @@ import modules.LocateImageOnScreen as LocateImageOnScreen
 def SelecionaLayout(nome_do_pr, janela_pr, nome_layout):
 
     # Janela selecionada do PR
-    gw.getWindowsWithTitle(janela_pr)[0].activate()
+    try:
+        wow.WaitOnWindow(janela_pr, timeout=60).activate()
+    except:
+        print(f"Janela do PR {janela_pr} não encontrada...")
+        return
 
     # Localiza botão de layout e clica
     location = LocateImageOnScreen.locate_image_on_screen("./modules/Layout-IMG/00-LayoutButton.png", waitFind=5)

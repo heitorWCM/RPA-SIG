@@ -9,32 +9,38 @@ import time
 import pyautogui
 import sys
 import modules.LocateImageOnScreen as LocateImageOnScreen
+import modules.WaitOnWindow as wow
 
 # Função para garantir que a janela principal do Prosyst ERP esteja ativa
 def JanelaPrincipal():
-    # Verifica a janela ativa
-    janela = gw.getActiveWindow()
 
-    if janela.title != "Prosyst ERP":
-        print("A janela ativa não é o Prosyst ERP. Tentando ativar a janela correta...")
+    # Encontra a janela principal do Prosyst ERP
+    try:
+        janela = wow.WaitOnWindow("Prosyst ERP")
+    except:
+        print("Janela 'Prosyst ERP' não encontrada. Encerrando o script.")
+        sys.exit()
 
-        try:
-            janela = gw.getWindowsWithTitle("Prosyst ERP")[0]
-            janela.activate()
+    if janela:
+        
+        janela.activate()
+        time.sleep(0.5)
+
+        # Maximiza a janela se não estiver maximizada
+        if not janela.isMaximized:
+            janela.maximize()
+            time.sleep(1)
+        
+        print("Encontrou a janela 'Prosyst ERP' e a ativou.")
                 
-            # Maximiza a janela se não estiver maximizada
-            if not janela.isMaximized:
-                janela.maximize()
-                time.sleep(1)
-            
-            pyautogui.click(janela.width/2,janela.height/2)
-            
-            time.sleep(0.5)
+        pyautogui.click(janela.width/2,janela.height/2)
+        
+        time.sleep(0.5)
 
-            return janela
-        except IndexError:
-            print("Janela 'Prosyst ERP' não encontrada. Encerrando o script.")
-            sys.exit()
+        return janela
+    else:
+        print("Janela 'Prosyst ERP' não encontrada. Encerrando o script.")
+        sys.exit()
 
 # Função para limpar o campo do PR
 def LimpaPR():
@@ -75,13 +81,16 @@ def AbrePR(nome_do_pr):
     # Espera até que a janela do PR seja aberta
     start = time.time()
 
-    timeout = 30  # segundos
+    if nome_do_pr.startswith("PRX"):
+        timeout = 120  # segundos
+    else:
+        timeout = 300  # segundos
 
     while True:
         active = gw.getActiveWindow()
 
-        if active and active.title != "Prosyst ERP":
-            print("Window found!")
+        if active and active.title != "Prosyst ERP" and active.title != "Prosyst Desenvolvimento de Sistemas":
+            print(f"Window found! {active.title}")
             return active.title
         
         if time.time() - start >= timeout:
