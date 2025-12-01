@@ -6,6 +6,8 @@ from .DateFolder import DeterminaDataECaminho
 from .ClickOnExcel import ClickOnExcel
 from .CarregandoDados import CarregandoDados
 from .WaitOnWindow import WaitOnWindow
+from .MouseBusy import MouseBusy
+from .CheckBoxCheck import CheckBoxCheck
 
 
 __all__ = [
@@ -17,5 +19,7 @@ __all__ = [
     'DeterminaDataECaminho',
     'ClickOnExcel',
     'CarregandoDados'
-    'WaitOnWindow'
+    'WaitOnWindow',
+    'MouseBusy',
+    'CheckBoxCheck'
 ]

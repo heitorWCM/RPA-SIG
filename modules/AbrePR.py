@@ -89,13 +89,15 @@ def AbrePR(nome_do_pr):
     while True:
         active = gw.getActiveWindow()
 
-        if active and active.title != "Prosyst ERP" and active.title != "Prosyst Desenvolvimento de Sistemas":
+        if active.title != "Prosyst ERP" and active.title != "Prosyst Desenvolvimento de Sistemas":
             print(f"Window found! {active.title}")
             return active.title
         
         if time.time() - start >= timeout:
             print("Timeout reached — quitting script.")
             sys.exit()
+
+        print("Waiting for PR window to open...")
 
         time.sleep(0.5)
     

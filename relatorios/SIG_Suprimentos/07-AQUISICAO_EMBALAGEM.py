@@ -1,5 +1,5 @@
 class ParametrosDados:
-    def __init__(self, nomePR="PR07416", nomeArquivo="05 - Itens Gerais"):
+    def __init__(self, nomePR="PRX004317", nomeArquivo="07 - Aquisição de Embalagem"):
         self.nomePR = nomePR
         self.nomeArquivo = nomeArquivo
 
@@ -10,6 +10,8 @@ import pygetwindow as gw
 import sys
 from pathlib import Path
 import argparse
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 # Passa o argumento de data e caminho via linha de comando
 parser = argparse.ArgumentParser()
@@ -44,11 +46,14 @@ from modules import (
     SelecionaLayout,
     ClickOnExcel,
     CarregandoDados,
-    WaitOnWindow
+    WaitOnWindow,
+    MouseBusy
 )
 
-total_steps = 5
-current_step = 0
+total_steps = 9
+current_step = 1
+
+print(f"PROGRESS:{current_step}/{total_steps}")
 
 #### Início do processo do relatório de Estoque de MP ####
 
@@ -58,56 +63,70 @@ p = ParametrosDados()
 
 nomeJanela = AbrePR(p.nomePR)
 
-
-print(f"\n{'='*20} Janela do PR aberta {p.nomePR} {'='*20}\n")
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
 
-# Obter dimensões
-tamanhoDaTela = pyautogui.size()
 janela = WaitOnWindow(nomeJanela)
-tamanhoDaJanela = janela.size
 
-# Centralizar horizontalmente, topo vertical
-posicao_x = (tamanhoDaTela.width - tamanhoDaJanela.width) / 2
-posicao_y = 0
-
-janela.moveTo(int(posicao_x), int(posicao_y))
-proportion = (janela.height/662)
-
-print(f"\n{'='*20} Preparo da janela {'='*20}\n")
+SelecionaLayout(p.nomePR, nomeJanela, "SIG")
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
 
 # Vai para o filtro de dados
-location = locate_image_on_screen("./base/PR07416-Filter.png", waitFind=2)
-pyautogui.click(location.left + int(240*proportion), location.top + int(10*proportion))
-time.sleep(0.6)
-pyautogui.write("3", interval=0.1)
-pyautogui.press("enter")
-time.sleep(0.6)
-pyautogui.write("0", interval=0.1)
-pyautogui.press("enter")
-time.sleep(0.6)
-pyautogui.write("9999", interval=0.1)
-pyautogui.press("enter")
-time.sleep(0.6)
-pyautogui.write("1", interval=0.1)
-pyautogui.press("enter")
-time.sleep(0.6)
-print(f"Inserindo data inicial... {datesFilter.initial_date}")
-dateSearch = datesFilter.final_date[:-4] + datesFilter.final_date[-2:]
-pyautogui.write(dateSearch, interval=0.25)
-pyautogui.press("enter")
-time.sleep(1)
-pyautogui.moveTo(x=location.left + int(470*proportion), y=location.top + int(515*proportion), duration=0.5)
+location = locate_image_on_screen("./base/PRX004317-Filter.png", waitFind=2)
+time.sleep(2.5)
+pyautogui.moveTo(location.left+130, location.top+10,duration=0.3)
 pyautogui.click()
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
 
+dataInicioAquisicao = (datetime.strptime(datesFilter.initial_date,"%d%m%Y") + relativedelta(years=-1)).replace(day=1).strftime("%d%m%Y")
+
+# Preenche os campos de data
+pyautogui.write(datesFilter.initial_date,interval=0.05)
+pyautogui.press('enter')
+time.sleep(0.1)
+pyautogui.write(datesFilter.final_date,interval=0.05)
+pyautogui.press('enter')
+time.sleep(0.1)
+pyautogui.write(dataInicioAquisicao,interval=0.05)
+pyautogui.press('enter')
+time.sleep(0.1)
+pyautogui.write(datesFilter.final_date,interval=0.05)
+pyautogui.press('enter')
+time.sleep(0.2)
+
+
+# Preenche campo dos tipos de materiais
+pyautogui.click(x=location.left+125, y=location.top+160)
+time.sleep(0.2)
+pyautogui.write("14104")
+pyautogui.press('tab')
+time.sleep(0.3)
+
+current_step += 1
+print(f"PROGRESS:{current_step}/{total_steps}")
+
+# Clica no botão de pesquisar
+pyautogui.click(x=location.left+300, y=location.top+540)
+
+current_step += 1
+print(f"PROGRESS:{current_step}/{total_steps}")
+
+# Carrega os dados
 CarregandoDados()
+
+current_step += 1
+print(f"PROGRESS:{current_step}/{total_steps}")
+
+MouseBusy()
+
+# Procura local para exportar
+location = locate_image_on_screen("./base/PRX004317-RightClickExport.png", waitFind=5, max_attempts=10)
+pyautogui.click(x=location.left+location.width+20, y=location.top+(location.height/2), button='Right')
+time.sleep(0.3)
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")

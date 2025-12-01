@@ -104,7 +104,8 @@ dateSearch = datesFilter.final_date[:-4] + datesFilter.final_date[-2:]
 pyautogui.write(dateSearch, interval=0.25)
 pyautogui.press("enter")
 time.sleep(1)
-pyautogui.click(location.left + int(470*proportion), location.top + int(515*proportion))
+pyautogui.moveTo(x=location.left + int(470*proportion), y=location.top + int(515*proportion), duration=0.5)
+pyautogui.click()
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")

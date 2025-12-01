@@ -1,5 +1,5 @@
 class ParametrosDados:
-    def __init__(self, nomePR="PR07416", nomeArquivo="05 - Itens Gerais"):
+    def __init__(self, nomePR="PR03017", nomeArquivo="08 - Uso e Consumo"):
         self.nomePR = nomePR
         self.nomeArquivo = nomeArquivo
 
@@ -44,10 +44,12 @@ from modules import (
     SelecionaLayout,
     ClickOnExcel,
     CarregandoDados,
-    WaitOnWindow
+    WaitOnWindow,
+    MouseBusy,
+    CheckBoxCheck
 )
 
-total_steps = 5
+total_steps = 9
 current_step = 0
 
 #### Início do processo do relatório de Estoque de MP ####
@@ -73,7 +75,7 @@ posicao_x = (tamanhoDaTela.width - tamanhoDaJanela.width) / 2
 posicao_y = 0
 
 janela.moveTo(int(posicao_x), int(posicao_y))
-proportion = (janela.height/662)
+proportion = (janela.height/764)
 
 print(f"\n{'='*20} Preparo da janela {'='*20}\n")
 
@@ -81,33 +83,100 @@ current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
 
 # Vai para o filtro de dados
-location = locate_image_on_screen("./base/PR07416-Filter.png", waitFind=2)
-pyautogui.click(location.left + int(240*proportion), location.top + int(10*proportion))
+location = locate_image_on_screen("./base/PR03017-Filter.png", waitFind=2)
+pyautogui.click(location.left + int(220*proportion), location.top + int(10*proportion))
 time.sleep(0.6)
-pyautogui.write("3", interval=0.1)
-pyautogui.press("enter")
-time.sleep(0.6)
-pyautogui.write("0", interval=0.1)
-pyautogui.press("enter")
-time.sleep(0.6)
-pyautogui.write("9999", interval=0.1)
-pyautogui.press("enter")
-time.sleep(0.6)
-pyautogui.write("1", interval=0.1)
-pyautogui.press("enter")
-time.sleep(0.6)
-print(f"Inserindo data inicial... {datesFilter.initial_date}")
-dateSearch = datesFilter.final_date[:-4] + datesFilter.final_date[-2:]
+dateSearch = datesFilter.initial_date[:-4] + datesFilter.initial_date[-2:]
 pyautogui.write(dateSearch, interval=0.25)
 pyautogui.press("enter")
-time.sleep(1)
-pyautogui.moveTo(x=location.left + int(470*proportion), y=location.top + int(515*proportion), duration=0.5)
+time.sleep(0.6)
+dateSearch2 = datesFilter.final_date[:-4] + datesFilter.final_date[-2:]
+pyautogui.write(dateSearch2, interval=0.25)
+pyautogui.press("enter")
+time.sleep(0.6)
+
+
+CheckBoxCheck(p.nomePR, '01')
+
+CheckBoxCheck(p.nomePR, '02')
+
+current_step += 1
+print(f"PROGRESS:{current_step}/{total_steps}")
+
+
+pyautogui.click(location.left + int(225*proportion), location.top + int(185*proportion))
+time.sleep(0.6)
+
+pyautogui.write("3", interval=0.25)
+pyautogui.press("enter")
+time.sleep(0.6)
+
+pyautogui.write("0", interval=0.25)
+pyautogui.press("enter")
+time.sleep(0.6)
+
+pyautogui.write("3", interval=0.25)
+pyautogui.press("enter")
+time.sleep(0.6)
+
+pyautogui.write("9999", interval=0.25)
+pyautogui.press("enter")
+time.sleep(0.6)
+
+
+CheckBoxCheck(p.nomePR, '03')
+
+CheckBoxCheck(p.nomePR, '04')
+
+current_step += 1
+print(f"PROGRESS:{current_step}/{total_steps}")
+
+
+pyautogui.moveTo(x=location.left + int(820*proportion), y=location.top + int(435*proportion), duration=0.5)
+time.sleep(0.6)
 pyautogui.click()
+
+
+################################################################
+### NECESSÁRIO CONTINUAR DAQUI
+
+CFOP = WaitOnWindow("CFOP")
+
+time.sleep(3)
+
+locateMarcarTodos = locate_image_on_screen("./base/PR03017-CFOP-Marcar.png", waitFind=3)
+pyautogui.moveTo(x=locateMarcarTodos.left + (locateMarcarTodos.width/2), y=locateMarcarTodos.top + (locateMarcarTodos.height/2), duration=0.5)
+pyautogui.click()
+
+MouseBusy()
+time.sleep(1)
+
+locateConfirmar = locate_image_on_screen("./base/PR03017-CFOP-Confirmar.png", waitFind=3)
+pyautogui.moveTo(x=locateConfirmar.left + (locateConfirmar.width/2), y=locateConfirmar.top + (locateConfirmar.height/2), duration=0.5)
+pyautogui.click()
+
+MouseBusy()
+time.sleep(1)
+
+CFOP.close()
+
+MouseBusy()
+time.sleep(1)
+
+current_step += 1
+print(f"PROGRESS:{current_step}/{total_steps}")
+
+pyautogui.moveTo(x=location.left + int(580*proportion), y=location.top + int(620*proportion), duration=0.5)
+pyautogui.click()
+
+MouseBusy()
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
 
 CarregandoDados()
+
+MouseBusy()
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")

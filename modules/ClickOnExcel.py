@@ -44,19 +44,20 @@ def SaveExcelPRX(path, fileName):
     location = LocateImageOnScreen.locate_image_on_screen("./modules/ClickOnExcel-IMG/03-FileName.png")
     pyautogui.click(x=location.left+location.width+20, y=location.top+(location.height/2))
     time.sleep(0.5)
-    pyautogui.write(fileName, interval=0.1)
+    pyautogui.write(fileName, interval=0.05)
+    time.sleep(0.2)
     pyautogui.press('tab')
     pyautogui.press('tab')
     time.sleep(0.3)
     pyautogui.press('Enter')
 
     # Caso tenha que sobresecrever o arquivo existente
-    location = LocateImageOnScreen.locate_image_on_screen(["./modules/ClickOnExcel-IMG/04-SaveAs.png","./modules/ClickOnExcel-IMG/05-SaveAs.png"], waitFind=3, lookForPresence=True)
+    location = LocateImageOnScreen.locate_image_on_screen(["./modules/ClickOnExcel-IMG/04-SaveAs.png","./modules/ClickOnExcel-IMG/05-SaveAs.png"], waitFind=3, lookForPresence=True, max_attempts=5)
     if location:
         pyautogui.press('enter')
 
     # Espera o arquivo ser salvo
-    if LocateImageOnScreen.locate_image_on_screen(["./modules/ClickOnExcel-IMG/06-OpenFile.png","./modules/ClickOnExcel-IMG/07-OpenFile.png"], waitFind=6, lookForPresence=True, max_attempts=10):   
+    if LocateImageOnScreen.locate_image_on_screen(["./modules/ClickOnExcel-IMG/06-OpenFile.png","./modules/ClickOnExcel-IMG/07-OpenFile.png"], waitFind=3, lookForPresence=True, max_attempts=10):
         pyautogui.press('tab')
         time.sleep(0.3)
         pyautogui.press('enter')
@@ -167,12 +168,14 @@ def SaveExcelStandard(path, fileName, prName):
         location = LocateImageOnScreen.locate_image_on_screen(["./modules/ClickOnExcel-IMG/13-SaveAs.png","./modules/ClickOnExcel-IMG/14-SaveAs.png"], waitFind=5)
 
         pyautogui.click(x=location.left + 150, y=location.top + 50)
-        pyautogui.write(path,interval=0.1)
+        pyautogui.write(path,interval=0.05)
+        time.sleep(0.2)
         pyautogui.press('enter')
         time.sleep(0.5)
 
         pyautogui.click(x=location.left + 125, y=location.top + 395)
-        pyautogui.write(fileName,interval=0.1)
+        pyautogui.write(fileName,interval=0.05)
+        time.sleep(0.2)
         pyautogui.press('enter')
         time.sleep(1)
 
