@@ -20,7 +20,7 @@ def SelecionaLayout(nome_do_pr, janela_pr, nome_layout):
         return
 
     # Localiza botão de layout e clica
-    location = LocateImageOnScreen.locate_image_on_screen(["./modules/Layout-IMG/00-LayoutButton.png","./modules/Layout-IMG/01-LayoutButton.png"], waitFind=5)
+    location = LocateImageOnScreen.locate_image_on_screen(["./modules/Layout-IMG/01-LayoutButton.png"], waitFind=5)
     pyautogui.click(x=location.left+(location.width/2), y=location.top+(location.height/2))
 
     # Localiza o padrão de layout e clica

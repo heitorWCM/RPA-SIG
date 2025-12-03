@@ -8,17 +8,25 @@ import sys
 
 # Função principal para clicar e salvar o excel
 def ClickOnExcel(path, fileName, prName):
-    if prName.startswith("PRX"):
-        SaveExcelPRX(path, fileName)
-    else:
-        SaveExcelStandard(path, fileName, prName)
     
-    print("Excel saved successfully.")
+    locationWithOutResults = LocateImageOnScreen.locate_image_on_screen("./modules/ClickOnExcel-IMG/15-WithOutResults.png", waitFind=1, lookForPresence=True, max_attempts=3)
+
+    if not locationWithOutResults:    
+        if prName.startswith("PRX"):
+            SaveExcelPRX(path, fileName)
+        else:
+            SaveExcelStandard(path, fileName, prName)
+        
+        print("Excel saved successfully.")
+    else:
+        print("Report has no results, skipping excel export.")
 
 #Funcção para salvar o excel do PRX
 def SaveExcelPRX(path, fileName):
     
+    startTrying =time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
     print("Saving excel for PRX")
+    print(f"Running: {startTrying}")
 
     location = LocateImageOnScreen.locate_image_on_screen("./modules/ClickOnExcel-IMG/00-Export.png")
     pyautogui.moveTo(location.left+(location.width/2), location.top+(location.height/2),duration=0.5)
@@ -68,8 +76,9 @@ def SaveExcelStandard(path, fileName, prName):
 
     while True:
         try:
+            startTrying =time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
             print(f"\n{'='*20} Attempting to activate report window {'='*20}\n")
-            print(f"{time.time()} - Attempt {tentativas + 1}")
+            print(f"{startTrying} - Attempt {tentativas + 1}")
             nome_da_janela = f"PROSYST [\\PROSYST\\WPROSYST\\{prName}.RPT ]"
             print(nome_da_janela)
             

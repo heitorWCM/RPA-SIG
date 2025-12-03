@@ -2,7 +2,7 @@ import pyautogui
 import time
 import sys
 
-def locate_image_on_screen(image_path, waitFind=0, lookForPresence=False, max_attempts=3):
+def locate_image_on_screen(image_path, waitFind=0, lookForPresence=False, max_attempts=3, regionArea=False):
 
     # Convert a single image into a list
     if isinstance(image_path, str):
@@ -13,9 +13,15 @@ def locate_image_on_screen(image_path, waitFind=0, lookForPresence=False, max_at
     tryTurn = 0
 
     while tryTurn < max_attempts:
+        
+        messagePop = ''
+
         for img in image_list:
             try:
-                location = pyautogui.locateOnScreen(img)
+                if not regionArea:
+                    location = pyautogui.locateOnScreen(img)
+                else:
+                    location = pyautogui.locateOnScreen(img, region=regionArea)
 
                 if location:
                     print(f"Found: {img} at {location}")
@@ -24,9 +30,11 @@ def locate_image_on_screen(image_path, waitFind=0, lookForPresence=False, max_at
                     return location  # Return as soon as ANY image is found
 
             except pyautogui.ImageNotFoundException:
-                print(f"Image not found - {img} (Attempt {tryTurn + 1}/{max_attempts})")
+                messagePop = messagePop + f"Image not found - {img} (Attempt {tryTurn + 1}/{max_attempts})\n"
 
         tryTurn += 1
+
+        print(messagePop)
 
         # Wait before next attempt
         if tryTurn < max_attempts:

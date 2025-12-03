@@ -37,6 +37,8 @@ def wait_while_image_exists(image_path, timeout=30):
 
         # Timeout
         if time.time() - start >= timeout:
+            end = time.time()
+            tempoAtual = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(end))
             print("Timeout reached — quitting script.")
             sys.exit()
 

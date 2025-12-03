@@ -54,6 +54,8 @@ def LimpaPR():
         pyautogui.moveTo(650, 300, duration=0.3)
         pyautogui.click()
 
+
+
 # Função principal para abrir o PR
 def AbrePR(nome_do_pr):
 
