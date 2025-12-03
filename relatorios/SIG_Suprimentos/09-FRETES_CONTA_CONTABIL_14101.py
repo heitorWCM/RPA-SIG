@@ -1,5 +1,5 @@
 class ParametrosDados:
-    def __init__(self, nomePR="PRX004317", nomeArquivo="06 - Aquisicao de MP"):
+    def __init__(self, nomePR="PRX004317", nomeArquivo="09 - Fretes Conta Contabil 14101"):
         self.nomePR = nomePR
         self.nomeArquivo = nomeArquivo
 
@@ -68,7 +68,7 @@ print(f"PROGRESS:{current_step}/{total_steps}")
 
 janela = WaitOnWindow(nomeJanela)
 
-SelecionaLayout(p.nomePR, nomeJanela, "SIG")
+SelecionaLayout(p.nomePR, nomeJanela, "FRETES")
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")

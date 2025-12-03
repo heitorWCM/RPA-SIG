@@ -1,5 +1,5 @@
 class ParametrosDados:
-    def __init__(self, nomePR="PRX012016", nomeArquivo="03 - Movimentacao de MP"):
+    def __init__(self, nomePR="PRX004317", nomeArquivo="11 - Fretes Conta Contabil 42443"):
         self.nomePR = nomePR
         self.nomeArquivo = nomeArquivo
 
@@ -10,6 +10,14 @@ import pygetwindow as gw
 import sys
 from pathlib import Path
 import argparse
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+import base64
+
+
 
 # Passa o argumento de data e caminho via linha de comando
 parser = argparse.ArgumentParser()
@@ -48,7 +56,7 @@ from modules import (
     MouseBusy
 )
 
-total_steps = 9
+total_steps = 5
 current_step = 1
 
 print(f"PROGRESS:{current_step}/{total_steps}")
@@ -59,80 +67,50 @@ time.sleep(1)  # time to switch to the correct screen
 
 p = ParametrosDados()
 
-nomeJanela = AbrePR(p.nomePR)
+# Inicializando o driver
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
 
-janela = WaitOnWindow(nomeJanela)
+time.sleep(2)  # Espera para garantir que o navegador abriu corretamente
 
-SelecionaLayout(p.nomePR, nomeJanela, "SIG")
-
-current_step += 1
-print(f"PROGRESS:{current_step}/{total_steps}")
-
-# Vai para o filtro de dados
-location = locate_image_on_screen("./base/PRX012016-Filter.png", waitFind=2)
-time.sleep(2.5)
-pyautogui.moveTo(location.left+(location.width)+15, location.top+location.height+10,duration=0.3)
-pyautogui.click()
+# Acessando o Google
+driver.get("https://www.ibge.gov.br/explica/inflacao.php")
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
 
-# Preenche os campos de data
-pyautogui.write(datesFilter.initial_date)
-pyautogui.press('tab')
-pyautogui.write(datesFilter.final_date)
-pyautogui.press('enter')
-time.sleep(0.2)
+time.sleep(5)  # Espera para garantir que a página carregou completamente
 
-# Preenche campo dos tipos de materiais
-pyautogui.click(x=location.left+(location.width)+20, y=location.top+350)
-time.sleep(0.2)
-pyautogui.write("1/1")
-pyautogui.press('tab')
-time.sleep(0.3)
-pyautogui.write("1/8")
-pyautogui.press('enter')
-time.sleep(0.5)
+elem = driver.find_element(By.CLASS_NAME, "variavel-periodo")
 
-current_step += 1
-print(f"PROGRESS:{current_step}/{total_steps}")
+print(f"Elemento encontrado: {elem.text}")
 
-# Clica no botão de pesquisar
-pyautogui.click(x=location.left+255, y=location.top+455)
+dataAtual = time.strftime("%Y%m%d", time.localtime(time.time()))
 
-current_step += 1
-print(f"PROGRESS:{current_step}/{total_steps}")
+nomePDF = "12 - INFLAÇÃO IBGE - " + elem.text.replace("/", "-") + " - " + dataAtual
 
-# Carrega os dados
-CarregandoDados()
+print(f"Nome do PDF: {nomePDF}")
 
-pyautogui.moveTo(janela.width/2,janela.width/2,duration=0.3)
-MouseBusy()
+pdf_options = {
+        "landscape": False,
+        "displayHeaderFooter": False,
+        "printBackground": True,
+        "preferCSSPageSize": True,
+    }
+
+result = driver.execute_cdp_cmd("Page.printToPDF", pdf_options)
+
+pdf_data = base64.b64decode(result['data'])
+with open(f"{datesFilter.path}\\{nomePDF}.pdf", "wb") as fall:
+    fall.write(pdf_data)
+
+print(f"PDF salvo em: {datesFilter.path}\\{nomePDF}.pdf")
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
 
-# Procura local para exportar
-location = locate_image_on_screen("./base/PRX012016-RightClickExport.png", waitFind=5, max_attempts=10)
-pyautogui.click(x=location.left+210, y=location.top+40, button='Right')
-time.sleep(0.3)
-
-current_step += 1
-print(f"PROGRESS:{current_step}/{total_steps}")
-
-# Exporta para o excel
-ClickOnExcel(datesFilter.path, p.nomeArquivo, p.nomePR)
-
-current_step += 1
-print(f"PROGRESS:{current_step}/{total_steps}")
-
-# Fecha da janela
-janela.close()
-time.sleep(1)
-
-LimpaPR()
-
-print(f"Processo finalizado do {p.nomePR} - {p.nomeArquivo}")
+# Fechando o navegador
+driver.quit()

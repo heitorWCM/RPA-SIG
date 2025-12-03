@@ -44,7 +44,8 @@ from modules import (
     SelecionaLayout,
     ClickOnExcel,
     CarregandoDados,
-    WaitOnWindow
+    WaitOnWindow,
+    MouseBusy
 )
 
 total_steps = 5
@@ -114,6 +115,9 @@ CarregandoDados()
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
+
+pyautogui.moveTo(janela.width/2,janela.width/2,duration=0.3)
+MouseBusy()
 
 # Exporta para o excel
 ClickOnExcel(datesFilter.path, p.nomeArquivo, p.nomePR)

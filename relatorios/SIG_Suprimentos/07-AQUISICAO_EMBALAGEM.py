@@ -1,5 +1,5 @@
 class ParametrosDados:
-    def __init__(self, nomePR="PRX004317", nomeArquivo="07 - Aquisição de Embalagem"):
+    def __init__(self, nomePR="PRX004317", nomeArquivo="07 - Aquisicao de Embalagem"):
         self.nomePR = nomePR
         self.nomeArquivo = nomeArquivo
 
@@ -121,6 +121,7 @@ CarregandoDados()
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
 
+pyautogui.moveTo(janela.width/2,janela.width/2,duration=0.3)
 MouseBusy()
 
 # Procura local para exportar

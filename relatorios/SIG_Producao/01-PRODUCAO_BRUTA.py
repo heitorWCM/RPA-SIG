@@ -1,5 +1,5 @@
 class ParametrosDados:
-    def __init__(self, nomePR="PRX004317", nomeArquivo="06 - Aquisicao de MP"):
+    def __init__(self, nomePR="PRX012016", nomeArquivo="01 - Producao Bruta"):
         self.nomePR = nomePR
         self.nomeArquivo = nomeArquivo
 
@@ -10,8 +10,6 @@ import pygetwindow as gw
 import sys
 from pathlib import Path
 import argparse
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
 
 # Passa o argumento de data e caminho via linha de comando
 parser = argparse.ArgumentParser()
@@ -68,49 +66,44 @@ print(f"PROGRESS:{current_step}/{total_steps}")
 
 janela = WaitOnWindow(nomeJanela)
 
-SelecionaLayout(p.nomePR, nomeJanela, "SIG")
+SelecionaLayout(p.nomePR, nomeJanela, "SIG_PROD")
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
 
 # Vai para o filtro de dados
-location = locate_image_on_screen("./base/PRX004317-Filter.png", waitFind=2)
+location = locate_image_on_screen("./base/PRX012016-Filter.png", waitFind=2)
 time.sleep(2.5)
-pyautogui.moveTo(location.left+130, location.top+10,duration=0.3)
+pyautogui.moveTo(location.left+(location.width)+15, location.top+location.height+10,duration=0.3)
 pyautogui.click()
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
 
-dataInicioAquisicao = (datetime.strptime(datesFilter.initial_date,"%d%m%Y") + relativedelta(years=-1)).replace(day=1).strftime("%d%m%Y")
-
 # Preenche os campos de data
-pyautogui.write(datesFilter.initial_date,interval=0.05)
-pyautogui.press('enter')
-time.sleep(0.1)
-pyautogui.write(datesFilter.final_date,interval=0.05)
-pyautogui.press('enter')
-time.sleep(0.1)
-pyautogui.write(dataInicioAquisicao,interval=0.05)
-pyautogui.press('enter')
-time.sleep(0.1)
-pyautogui.write(datesFilter.final_date,interval=0.05)
+pyautogui.write(datesFilter.initial_date)
+pyautogui.press('tab')
+pyautogui.write(datesFilter.final_date)
 pyautogui.press('enter')
 time.sleep(0.2)
-
 
 # Preenche campo dos tipos de materiais
-pyautogui.click(x=location.left+125, y=location.top+160)
+pyautogui.click(x=location.left+125, y=location.top+105)
 time.sleep(0.2)
-pyautogui.write("14101")
+pyautogui.write("13")
 pyautogui.press('tab')
 time.sleep(0.3)
+pyautogui.click(x=location.left+125, y=location.top+275)
+time.sleep(0.2)
+pyautogui.write("2")
+pyautogui.press('enter')
+time.sleep(0.5)
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
 
 # Clica no botão de pesquisar
-pyautogui.click(x=location.left+300, y=location.top+540)
+pyautogui.click(x=location.left+255, y=location.top+455)
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
@@ -118,15 +111,15 @@ print(f"PROGRESS:{current_step}/{total_steps}")
 # Carrega os dados
 CarregandoDados()
 
-current_step += 1
-print(f"PROGRESS:{current_step}/{total_steps}")
-
 pyautogui.moveTo(janela.width/2,janela.width/2,duration=0.3)
 MouseBusy()
 
+current_step += 1
+print(f"PROGRESS:{current_step}/{total_steps}")
+
 # Procura local para exportar
-location = locate_image_on_screen("./base/PRX004317-RightClickExport.png", waitFind=5, max_attempts=10)
-pyautogui.click(x=location.left+location.width+20, y=location.top+(location.height/2), button='Right')
+location = locate_image_on_screen("./base/PRX012016-RightClickExport.png", waitFind=5, max_attempts=10)
+pyautogui.click(x=location.left+210, y=location.top+40, button='Right')
 time.sleep(0.3)
 
 current_step += 1

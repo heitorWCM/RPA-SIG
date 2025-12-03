@@ -1,5 +1,5 @@
 class ParametrosDados:
-    def __init__(self, nomePR="PRX004317", nomeArquivo="06 - Aquisicao de MP"):
+    def __init__(self, nomePR="PRX004317", nomeArquivo="11 - Fretes Conta Contabil 42443"):
         self.nomePR = nomePR
         self.nomeArquivo = nomeArquivo
 
@@ -68,7 +68,7 @@ print(f"PROGRESS:{current_step}/{total_steps}")
 
 janela = WaitOnWindow(nomeJanela)
 
-SelecionaLayout(p.nomePR, nomeJanela, "SIG")
+SelecionaLayout(p.nomePR, nomeJanela, "FRETES")
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
@@ -102,7 +102,7 @@ time.sleep(0.2)
 # Preenche campo dos tipos de materiais
 pyautogui.click(x=location.left+125, y=location.top+160)
 time.sleep(0.2)
-pyautogui.write("14101")
+pyautogui.write("42443")
 pyautogui.press('tab')
 time.sleep(0.3)
 

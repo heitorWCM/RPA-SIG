@@ -71,7 +71,7 @@ janela = WaitOnWindow(nomeJanela)
 tamanhoDaJanela = janela.size
 
 # Centralizar horizontalmente, topo vertical
-posicao_x = (tamanhoDaTela.width - tamanhoDaJanela.width) / 2
+posicao_x = 0
 posicao_y = 0
 
 janela.moveTo(int(posicao_x), int(posicao_y))
@@ -179,15 +179,16 @@ MouseBusy()
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
 
-CarregandoDados()
-
-MouseBusy()
+CarregandoDados(timeoutLoading=5400)
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
 
+pyautogui.moveTo(janela.width/2,janela.width/2,duration=0.3)
+MouseBusy()
+
 # Exporta para o excel
-ClickOnExcel(datesFilter.path, p.nomeArquivo, p.nomePR)
+ClickOnExcel(datesFilter.path, p.nomeArquivo, p.nomePR+"A")
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")

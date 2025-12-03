@@ -43,7 +43,8 @@ from modules import (
     SelecionaLayout,
     ClickOnExcel,
     CarregandoDados,
-    WaitOnWindow
+    WaitOnWindow,
+    MouseBusy
 )
 
 total_steps = 9
@@ -106,6 +107,9 @@ print(f"PROGRESS:{current_step}/{total_steps}")
 
 # Carrega os dados
 CarregandoDados()
+
+pyautogui.moveTo(janela.width/2,janela.width/2,duration=0.3)
+MouseBusy()
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
