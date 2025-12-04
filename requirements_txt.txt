@@ -1,0 +1,29 @@
+# RPA SIG - Requirements
+# Python 3.8+ required
+
+# GUI and Window Management
+customtkinter>=5.2.0
+pygetwindow>=0.0.9
+
+# Automation
+pyautogui>=0.9.54
+
+# Date Handling
+python-dateutil>=2.8.2
+
+# Clipboard and Excel
+pyperclip>=1.8.2
+xlsxwriter>=3.1.0
+
+# Windows API
+pywin32>=306
+
+# Web Automation (for some reports)
+selenium>=4.15.0
+webdriver-manager>=4.0.0
+
+# Image Recognition (if using OpenCV features)
+# opencv-python>=4.8.0  # Uncomment if needed
+
+# Optional: Better screenshot support
+# pillow>=10.0.0  # Uncomment if needed
