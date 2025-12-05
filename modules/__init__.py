@@ -8,6 +8,7 @@ from .CarregandoDados import CarregandoDados
 from .WaitOnWindow import WaitOnWindow
 from .MouseBusy import MouseBusy
 from .CheckBoxCheck import CheckBoxCheck
+from .ClipToExcel import ClipToExcel
 
 
 __all__ = [
@@ -21,5 +22,6 @@ __all__ = [
     'CarregandoDados'
     'WaitOnWindow',
     'MouseBusy',
-    'CheckBoxCheck'
+    'CheckBoxCheck',
+    'ClipToExcel'
 ]

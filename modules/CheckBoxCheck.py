@@ -5,7 +5,7 @@ import pyautogui
 def CheckBoxCheck(prName, number):
     
     img_ok  = f"./modules/CheckBoxCheck-IMG/{prName}-CB{number}-OK.png"
-    img_nok = f"./modules/CheckBoxCheck-IMG/{prName}-CB-{number}_NOK.png"
+    img_nok = f"./modules/CheckBoxCheck-IMG/{prName}-CB{number}-NOK.png"
 
     locationBox = LocateImageOnScreen.locate_image_on_screen(img_ok,waitFind=2,lookForPresence=True)
 

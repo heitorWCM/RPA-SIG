@@ -38,8 +38,8 @@ def CarregandoDados(timeoutLoading=900):
 
     screen_w, screen_h = pyautogui.size()
 
-    region_w = screen_w // 2     # 50% da largura
-    region_h = screen_h // 2     # 50% da altura
+    region_w = 3*screen_w // 5     # 50% da largura
+    region_h = 3*screen_h // 5     # 50% da altura
 
     # Coordenadas de início (canto superior esquerdo) para centralizar
     region_x = (screen_w - region_w) // 2
