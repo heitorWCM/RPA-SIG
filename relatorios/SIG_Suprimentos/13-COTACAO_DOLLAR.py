@@ -126,29 +126,6 @@ try:
 
     time.sleep(1)
 
-    #  # Fechar o banner de cookies antes de clicar no botão
-    # try:
-    #     driver.switch_to.default_content()  # Sai do iframe temporariamente
-    #     cookie_button = WebDriverWait(driver, 5).until(
-    #         EC.element_to_be_clickable((By.CSS_SELECTOR, "button.br-button.primary[data-dismiss='br-cookiebar']"))
-    #     )
-    #     cookie_button.click()
-    #     print("Banner de cookies fechado.")
-    #     time.sleep(1)
-    #     # Volta para o iframe
-    #     iframe = wait.until(EC.presence_of_element_located((By.TAG_NAME, "iframe")))
-    #     driver.switch_to.frame(iframe)
-    # except Exception as e:
-    #     print(f"Banner de cookies não encontrado ou já fechado: {e}")
-    #     # Garante que está no iframe mesmo se não encontrou o banner
-    #     try:
-    #         driver.switch_to.default_content()
-    #         iframe = wait.until(EC.presence_of_element_located((By.TAG_NAME, "iframe")))
-    #         driver.switch_to.frame(iframe)
-    #     except:
-    #         pass
-
-
     submit_button = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "botao")))
     driver.execute_script("arguments[0].click();", submit_button)  
     # submit_button.click()

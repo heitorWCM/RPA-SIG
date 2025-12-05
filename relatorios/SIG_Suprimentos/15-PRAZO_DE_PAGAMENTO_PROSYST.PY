@@ -1,5 +1,5 @@
 class ParametrosDados:
-    def __init__(self, nomePR="PR03017", nomeArquivo="08 - Uso e Consumo"):
+    def __init__(self, nomePR="PR03017", nomeArquivo="15 - Prazo de pagamento (Prosyst)"):
         self.nomePR = nomePR
         self.nomeArquivo = nomeArquivo
 
@@ -98,7 +98,7 @@ time.sleep(0.6)
 
 CheckBoxCheck(p.nomePR, '01')
 
-CheckBoxCheck(p.nomePR, '02')
+CheckBoxCheck(p.nomePR, '05')
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
@@ -107,7 +107,7 @@ print(f"PROGRESS:{current_step}/{total_steps}")
 pyautogui.click(location.left + int(225*proportion), location.top + int(185*proportion))
 time.sleep(0.6)
 
-pyautogui.write("3", interval=0.25)
+pyautogui.write("1", interval=0.25)
 pyautogui.press("enter")
 time.sleep(0.6)
 
@@ -115,7 +115,7 @@ pyautogui.write("0", interval=0.25)
 pyautogui.press("enter")
 time.sleep(0.6)
 
-pyautogui.write("3", interval=0.25)
+pyautogui.write("1", interval=0.25)
 pyautogui.press("enter")
 time.sleep(0.6)
 
@@ -126,7 +126,7 @@ time.sleep(0.6)
 
 CheckBoxCheck(p.nomePR, '03')
 
-CheckBoxCheck(p.nomePR, '04')
+CheckBoxCheck(p.nomePR, '06')
 
 current_step += 1
 print(f"PROGRESS:{current_step}/{total_steps}")
